@@ -46,11 +46,11 @@ export default function Home() {
     async (id: string) => {
       const originalPost = posts.find((post) => post.id === id);
 
-      if (!originalPost || originalPost.status !== "failed") {
-        return;
-      }
-
-      if (retryingPostIds.includes(id)) {
+      if (
+        !originalPost ||
+        originalPost.status !== "failed" ||
+        retryingPostIds.includes(id)
+      ) {
         return;
       }
 
@@ -96,23 +96,15 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
         <DashboardHeader
           totalPosts={posts.length}
           onCreatePost={() => setIsComposerOpen(true)}
         />
 
-        <section className="mt-8">
-          <div className="mb-5">
-            <h2 className="text-lg font-semibold text-gray-900">Your queue</h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              All your posts, organized by scheduled date.
-            </p>
-          </div>
-
+        <section className="mt-9 sm:mt-10">
           {loading ? (
-            <div role="status" aria-label="Loading posts" className="space-y-3">
+            <div role="status" aria-label="Loading posts" className="space-y-4">
               {[1, 2, 3].map((item) => (
                 <div
                   key={item}
@@ -134,7 +126,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => void loadPosts()}
-                className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Try again
               </button>

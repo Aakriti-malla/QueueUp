@@ -1,49 +1,60 @@
+import {
+  SiFacebook,
+  SiInstagram,
+  SiX,
+  SiTiktok,
+} from "@icons-pack/react-simple-icons";
 
 import type { Platform } from "@/types/post";
 
-const platformDetails: Record<
-  Platform,
-  { symbol: string; label: string; className: string }
-> = {
+const platformDetails = {
   facebook: {
-    symbol: "f",
+    Icon: SiFacebook,
     label: "Facebook",
-    className: "bg-blue-100 text-blue-700",
   },
   instagram: {
-    symbol: "◎",
+    Icon: SiInstagram,
     label: "Instagram",
-    className: "bg-pink-100 text-pink-700",
   },
   x: {
-    symbol: "𝕏",
+    Icon: SiX,
     label: "X",
-    className: "bg-gray-200 text-gray-900",
   },
   tiktok: {
-    symbol: "♪",
+    Icon: SiTiktok,
     label: "TikTok",
-    className: "bg-gray-900 text-white",
   },
-};
+} satisfies Record<
+  Platform,
+  {
+    Icon: React.ComponentType<{
+      size?: number;
+      color?: string;
+      title?: string;
+    }>;
+    label: string;
+  }
+>;
 
 interface PlatformIconProps {
   platform: Platform;
+  size?: number;
 }
 
 export default function PlatformIcon({
   platform,
+  size = 18,
 }: PlatformIconProps) {
-  const details = platformDetails[platform];
+  const { Icon, label } = platformDetails[platform];
 
   return (
     <span
       role="img"
-      aria-label={details.label}
-      title={details.label}
-      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${details.className}`}
+      aria-label={label}
+      title={label}
+      className="inline-flex shrink-0 items-center justify-center text-gray-500"
     >
-      {details.symbol}
+      <Icon size={size} color="currentColor" title={label} />
     </span>
   );
 }

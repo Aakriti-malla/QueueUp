@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { RotateCw } from "lucide-react";
 
 import type { Post, PostStatus } from "@/types/post";
 import PlatformIcon from "@/components/PlatformIcon";
@@ -31,8 +35,9 @@ export default function PostCard({
   onRetry,
   isRetrying,
 }: PostCardProps) {
-  const status = statusDetails[post.status];
+  const [imageError, setImageError] = useState(false);
 
+  const status = statusDetails[post.status];
   const scheduledDate = new Date(post.scheduledAt);
 
   const formattedTime = scheduledDate.toLocaleTimeString(undefined, {
@@ -42,46 +47,83 @@ export default function PostCard({
   });
 
   const formattedDate = scheduledDate.toLocaleDateString(undefined, {
-    month: "short",
     day: "numeric",
+    month: "short",
     year: "numeric",
   });
 
   return (
-    <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:p-5">
-      <div className="flex items-start gap-3">
-        <div className="flex min-w-0 flex-1 gap-3">
-          <div className="flex -space-x-1">
-            {post.platforms.map((platform) => (
-              <PlatformIcon key={platform} platform={platform} />
-            ))}
-          </div>
+    <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
+      <div className="flex items-start gap-3 sm:gap-4">
+        {post.mediaUrl && !imageError && (
+          <a
+            href={post.mediaUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View attached media"
+            className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:h-16 sm:w-16"
+          >
+            <img
+              src={post.mediaUrl}
+              alt="Post media"
+              loading="lazy"
+              onError={() => setImageError(true)}
+              className="h-full w-full object-cover"
+            />
+          </a>
+        )}
 
-          <div className="min-w-0 flex-1">
-            <p className="break-all text-sm leading-6 text-gray-800">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <p className="min-w-0 whitespace-pre-wrap break-words text-sm leading-6 text-gray-900 sm:text-base">
               {post.content}
             </p>
 
-            {post.mediaUrl && (
-              <a
-                href={post.mediaUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline"
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${status.className}`}
+            >
+              {status.label}
+            </span>
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div
+              className="flex items-center gap-2"
+              aria-label={`Platforms: ${post.platforms.join(", ")}`}
+            >
+              {post.platforms.map((platform) => (
+                <PlatformIcon key={platform} platform={platform} />
+              ))}
+            </div>
+
+            {post.status === "failed" && (
+              <button
+                type="button"
+                onClick={() => onRetry(post.id)}
+                disabled={isRetrying}
+                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-900 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                View attached media
-                <span aria-hidden="true">↗</span>
-              </a>
+                <RotateCw
+                  size={15}
+                  className={isRetrying ? "animate-spin" : ""}
+                  aria-hidden="true"
+                />
+                {isRetrying ? "Retrying..." : "Retry"}
+              </button>
             )}
           </div>
         </div>
-
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${status.className}`}
-        >
-          {status.label}
-        </span>
       </div>
+
+      {post.status === "failed" && post.errorMessage && (
+        <div
+          role="note"
+          className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          <span className="font-medium">Publishing error: </span>
+          {post.errorMessage}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3 text-xs text-gray-500">
         <time dateTime={post.scheduledAt}>
@@ -93,29 +135,6 @@ export default function PostCard({
           {post.platforms.length === 1 ? "platform" : "platforms"}
         </span>
       </div>
-
-      {post.status === "failed" && post.errorMessage && (
-        <div
-          role="note"
-          className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
-        >
-          <span className="font-semibold">Publishing error: </span>
-          {post.errorMessage}
-        </div>
-      )}
-
-      {(post.status === "failed" || isRetrying) && (
-        <div className="mt-3">
-          <button
-            type="button"
-            onClick={() => onRetry(post.id)}
-            disabled={isRetrying}
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            {isRetrying ? "Retrying..." : "Retry post"}
-          </button>
-        </div>
-      )}
     </article>
   );
 }

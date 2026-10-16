@@ -1,12 +1,14 @@
 
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import { X } from "lucide-react";
 
 import CharacterCounter, {
   CHARACTER_LIMITS,
 } from "@/components/CharacterCounter";
+import PlatformIcon from "@/components/PlatformIcon";
 import { createPost } from "@/lib/mock-api";
 import type { Platform, Post } from "@/types/post";
 
@@ -28,7 +30,7 @@ function formatDateTimeLocal(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, "0");
 
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate()
+    date.getDate(),
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
@@ -89,7 +91,10 @@ export default function PostComposer({
   const isSubmittingRef = useRef(false);
 
   useEffect(() => {
-  isSubmittingRef.current = isSubmitting;
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     const dialog = dialogRef.current;
@@ -110,7 +115,7 @@ export default function PostComposer({
       if (event.key !== "Tab" || !dialog) return;
 
       const focusable = Array.from(
-        dialog.querySelectorAll<HTMLElement>(focusableSelector)
+        dialog.querySelectorAll<HTMLElement>(focusableSelector),
       ).filter((element) => element.offsetParent !== null);
 
       if (focusable.length === 0) {
@@ -145,13 +150,13 @@ export default function PostComposer({
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus();
     };
-  }, [onClose, isSubmitting]);
+  }, [onClose]);
 
   function togglePlatform(platform: Platform) {
     setSelectedPlatforms((current) =>
       current.includes(platform)
         ? current.filter((item) => item !== platform)
-        : [...current, platform]
+        : [...current, platform],
     );
 
     setError("");
@@ -160,14 +165,14 @@ export default function PostComposer({
   const characterCount = Array.from(content).length;
 
   const hasExceededLimit = selectedPlatforms.some(
-    (platform) => characterCount > CHARACTER_LIMITS[platform]
+    (platform) => characterCount > CHARACTER_LIMITS[platform],
   );
 
   const trimmedMediaUrl = mediaUrl.trim();
   const mediaUrlError = getImageUrlError(trimmedMediaUrl);
   const showImagePreview = Boolean(trimmedMediaUrl) && !mediaUrlError;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -183,7 +188,7 @@ export default function PostComposer({
 
     if (hasExceededLimit) {
       setError(
-        "Your content exceeds the character limit for a selected platform."
+        "Your content exceeds the character limit for a selected platform.",
       );
       return;
     }
@@ -196,7 +201,7 @@ export default function PostComposer({
 
       if (imagePreviewStatus === "error") {
         setError(
-          "This image could not be loaded. Check the URL or choose another image."
+          "This image could not be loaded. Check the URL or choose another image.",
         );
         return;
       }
@@ -225,7 +230,6 @@ export default function PostComposer({
     setIsSubmitting(true);
 
     try {
-      // datetime-local is local time; toISOString stores the time in UTC.
       const post = await createPost({
         content: content.trim(),
         platforms: [...selectedPlatforms],
@@ -233,11 +237,10 @@ export default function PostComposer({
         ...(trimmedMediaUrl ? { mediaUrl: trimmedMediaUrl } : {}),
       });
 
-      // Notify the parent only after the mock API succeeds.
       onCreated(post);
       onClose();
     } catch {
-      // Keep all form state intact so the user can retry.
+      // Keep the user's draft intact when creation fails.
       setError("We couldn't create your post. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -246,7 +249,7 @@ export default function PostComposer({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-gray-950/40 backdrop-blur-[2px] sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (
           event.target === event.currentTarget &&
@@ -263,20 +266,21 @@ export default function PostComposer({
         aria-labelledby="composer-title"
         aria-describedby="composer-description"
         tabIndex={-1}
-        className="max-h-[95dvh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-2xl sm:rounded-2xl sm:p-6"
+        className="max-h-[95dvh] w-full overflow-y-auto rounded-t-2xl border border-gray-100 bg-white shadow-2xl sm:max-w-2xl sm:rounded-2xl"
       >
-        <div className="flex items-start justify-between gap-4">
+        {/* Modal header */}
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-gray-100 bg-white px-5 py-5 sm:px-7">
           <div>
             <h2
               id="composer-title"
-              className="text-xl font-bold text-gray-900"
+              className="text-xl font-semibold tracking-tight text-gray-950"
             >
               Create a post
             </h2>
 
             <p
               id="composer-description"
-              className="mt-1 text-sm text-gray-500"
+              className="mt-1 text-sm leading-5 text-gray-500"
             >
               Compose once and schedule across your platforms.
             </p>
@@ -287,17 +291,18 @@ export default function PostComposer({
             onClick={onClose}
             disabled={isSubmitting}
             aria-label="Close composer"
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
           >
-            ✕
+            <X size={19} aria-hidden="true" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6 px-5 py-6 sm:px-7">
+          {/* Post content */}
           <div>
             <label
               htmlFor="post-content"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-medium text-gray-800"
             >
               Post content
             </label>
@@ -312,51 +317,63 @@ export default function PostComposer({
               rows={5}
               placeholder="What would you like to share?"
               required
-              className="w-full resize-y rounded-lg border border-gray-300 p-3 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="min-h-36 w-full resize-y rounded-xl border border-gray-200 bg-white p-4 text-sm leading-6 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
 
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {selectedPlatforms.map((platform) => (
-                <CharacterCounter
-                  key={platform}
-                  platform={platform}
-                  content={content}
-                />
-              ))}
-            </div>
+            {selectedPlatforms.length > 0 && (
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {selectedPlatforms.map((platform) => (
+                  <CharacterCounter
+                    key={platform}
+                    platform={platform}
+                    content={content}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Platform selection */}
           <fieldset>
-            <legend className="mb-3 text-sm font-medium text-gray-700">
+            <legend className="mb-3 text-sm font-medium text-gray-800">
               Publish to
             </legend>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {platforms.map((platform) => (
-                <label
-                  key={platform.value}
-                  className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm ${
-                    selectedPlatforms.includes(platform.value)
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedPlatforms.includes(platform.value)}
-                    onChange={() => togglePlatform(platform.value)}
-                    className="h-4 w-4 accent-indigo-600"
-                  />
-                  {platform.label}
-                </label>
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {platforms.map((platform) => {
+                const isSelected = selectedPlatforms.includes(
+                  platform.value,
+                );
+
+                return (
+                  <label
+                    key={platform.value}
+                    className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-indigo-200 ${
+                      isSelected
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => togglePlatform(platform.value)}
+                      className="sr-only"
+                    />
+
+                    <PlatformIcon platform={platform.value} size={18} />
+                    {platform.label}
+                  </label>
+                );
+              })}
             </div>
           </fieldset>
 
+          {/* Optional image */}
           <div>
             <label
               htmlFor="post-media"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-medium text-gray-800"
             >
               Image URL{" "}
               <span className="font-normal text-gray-400">(optional)</span>
@@ -373,21 +390,29 @@ export default function PostComposer({
                 setMediaUrl(value);
                 setError("");
                 setImagePreviewStatus(
-                  value.trim() ? "loading" : "idle"
+                  value.trim() ? "loading" : "idle",
                 );
               }}
               placeholder="https://example.com/image.jpg"
-              aria-invalid={Boolean(mediaUrlError) || imagePreviewStatus === "error"}
-              aria-describedby={
-                mediaUrlError || imagePreviewStatus === "error"
-                  ? "post-media-error"
-                  : "post-media-help"
+              aria-invalid={
+                Boolean(mediaUrlError) ||
+                imagePreviewStatus === "error"
               }
-              className="min-h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              aria-describedby={
+                mediaUrlError
+                  ? "post-media-error"
+                  : imagePreviewStatus === "error"
+                    ? "post-media-preview-error"
+                    : "post-media-help"
+              }
+              className="min-h-11 w-full rounded-xl border border-gray-200 px-3.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
 
-            <p id="post-media-help" className="mt-2 text-xs text-gray-500">
-              Use a direct image URL. The preview must load before scheduling.
+            <p
+              id="post-media-help"
+              className="mt-2 text-xs leading-5 text-gray-500"
+            >
+              Add a direct image URL. The preview must load before scheduling.
             </p>
 
             {mediaUrlError && (
@@ -408,9 +433,9 @@ export default function PostComposer({
 
             {showImagePreview && imagePreviewStatus === "error" && (
               <p
-                id="post-media-error"
+                id="post-media-preview-error"
                 role="alert"
-                className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+                className="mt-3 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700"
               >
                 This image could not be loaded. Check that the URL points to
                 an accessible image and try again.
@@ -418,23 +443,32 @@ export default function PostComposer({
             )}
 
             {showImagePreview && imagePreviewStatus !== "error" && (
-              <img
-                src={trimmedMediaUrl}
-                alt="Post media preview"
-                referrerPolicy="no-referrer"
-                onLoad={() => setImagePreviewStatus("loaded")}
-                onError={() => setImagePreviewStatus("error")}
-                className={`mt-3 max-h-48 max-w-full rounded-lg border border-gray-200 object-contain ${
+              <div
+                className={`mt-3 inline-flex max-w-full rounded-xl border border-gray-200 bg-gray-50 p-2 ${
                   imagePreviewStatus === "loading" ? "hidden" : ""
                 }`}
-              />
+              >
+                <Image
+                  src={trimmedMediaUrl}
+                  alt="Post media preview"
+                  width={640}
+                  height={360}
+                  sizes="(max-width: 640px) 100vw, 640px"
+                  unoptimized
+                  referrerPolicy="no-referrer"
+                  onLoad={() => setImagePreviewStatus("loaded")}
+                  onError={() => setImagePreviewStatus("error")}
+                  className="h-auto max-h-48 max-w-full rounded-lg object-contain"
+                />
+              </div>
             )}
           </div>
 
+          {/* Schedule date and time */}
           <div>
             <label
               htmlFor="post-schedule"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className="mb-2 block text-sm font-medium text-gray-800"
             >
               Schedule date and time
             </label>
@@ -449,29 +483,31 @@ export default function PostComposer({
                 setError("");
               }}
               required
-              className="min-h-11 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
             />
 
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs leading-5 text-gray-500">
               Time is entered in your local timezone and stored in UTC.
             </p>
           </div>
 
+          {/* Form-level error */}
           {error && (
             <p
               role="alert"
-              className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-xl border border-red-100 bg-red-50 p-3 text-sm leading-5 text-red-700"
             >
               {error}
             </p>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
+          {/* Actions */}
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="min-h-11 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="min-h-11 rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
             >
               Cancel
             </button>
@@ -484,7 +520,7 @@ export default function PostComposer({
                 selectedPlatforms.length === 0 ||
                 hasExceededLimit
               }
-              className="min-h-11 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? "Scheduling..." : "Schedule post"}
             </button>
