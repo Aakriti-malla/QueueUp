@@ -28,7 +28,6 @@ export default function PostCard({ post }: PostCardProps) {
   const status = statusDetails[post.status];
 
   const scheduledDate = new Date(post.scheduledAt);
-  console.log(scheduledDate)
   const formattedTime = scheduledDate.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit",
@@ -56,7 +55,7 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="whitespace-pre-wrap wrap-break-words text-sm leading-6 text-gray-800">
+            <p className="break-all text-sm leading-6 text-gray-800">
               {post.content}
             </p>
 
