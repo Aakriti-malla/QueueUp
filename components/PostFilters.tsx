@@ -1,17 +1,14 @@
-
 "use client";
 
-import {
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { filterPosts } from "@/lib/post-utils";
 import type { Platform, Post, PostStatus } from "@/types/post";
 import PostQueue from "@/components/PostQueue";
 
 interface PostFiltersProps {
   posts: Post[];
+  onRetry: (id: string) => void;
+  retryingPostIds: string[];
 }
 
 const platforms: { value: Platform; label: string }[] = [
@@ -28,20 +25,15 @@ const statuses: { value: PostStatus | ""; label: string }[] = [
   { value: "failed", label: "Failed" },
 ];
 
-const validPlatforms: Platform[] = [
-  "facebook",
-  "instagram",
-  "x",
-  "tiktok",
-];
+const validPlatforms: Platform[] = ["facebook", "instagram", "x", "tiktok"];
 
-const validStatuses: PostStatus[] = [
-  "scheduled",
-  "published",
-  "failed",
-];
+const validStatuses: PostStatus[] = ["scheduled", "published", "failed"];
 
-export default function PostFilters({ posts }: PostFiltersProps) {
+export default function PostFilters({
+  posts,
+  onRetry,
+  retryingPostIds,
+}: PostFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -49,7 +41,7 @@ export default function PostFilters({ posts }: PostFiltersProps) {
   const selectedPlatforms = (searchParams.get("platform") ?? "")
     .split(",")
     .filter((value): value is Platform =>
-      validPlatforms.includes(value as Platform)
+      validPlatforms.includes(value as Platform),
     );
 
   const rawStatus = searchParams.get("status") ?? "";
@@ -59,10 +51,7 @@ export default function PostFilters({ posts }: PostFiltersProps) {
 
   const search = searchParams.get("search") ?? "";
 
-  function updateQuery(
-    key: string,
-    value: string | null
-  ) {
+  function updateQuery(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
 
     if (value) {
@@ -84,7 +73,7 @@ export default function PostFilters({ posts }: PostFiltersProps) {
 
     updateQuery(
       "platform",
-      nextPlatforms.length > 0 ? nextPlatforms.join(",") : null
+      nextPlatforms.length > 0 ? nextPlatforms.join(",") : null,
     );
   }
 
@@ -167,7 +156,9 @@ export default function PostFilters({ posts }: PostFiltersProps) {
             <select
               id="post-status"
               value={selectedStatus}
-              onChange={(event) => updateQuery("status", event.target.value || null)}
+              onChange={(event) =>
+                updateQuery("status", event.target.value || null)
+              }
               className="min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             >
               {statuses.map((status) => (
@@ -196,7 +187,11 @@ export default function PostFilters({ posts }: PostFiltersProps) {
         </div>
       </section>
 
-      <PostQueue posts={filteredPosts} />
+      <PostQueue
+        posts={filteredPosts}
+        onRetry={onRetry}
+        retryingPostIds={retryingPostIds}
+      />
     </div>
   );
 }

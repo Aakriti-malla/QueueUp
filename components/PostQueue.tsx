@@ -5,9 +5,15 @@ import PostCard from "@/components/PostCard";
 
 interface PostQueueProps {
   posts: Post[];
+  onRetry: (id: string) => void;
+  retryingPostIds: string[];
 }
 
-export default function PostQueue({ posts }: PostQueueProps) {
+export default function PostQueue({
+  posts,
+  onRetry,
+  retryingPostIds,
+}: PostQueueProps) {
   const groups = groupPostsByDay(posts);
 
   if (posts.length === 0) {
@@ -46,7 +52,12 @@ export default function PostQueue({ posts }: PostQueueProps) {
 
           <div className="space-y-3">
             {group.posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onRetry={onRetry}
+                isRetrying={retryingPostIds.includes(post.id)}
+              />
             ))}
           </div>
         </section>

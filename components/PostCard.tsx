@@ -4,6 +4,8 @@ import PlatformIcon from "@/components/PlatformIcon";
 
 interface PostCardProps {
   post: Post;
+  onRetry: (id: string) => void;
+  isRetrying: boolean;
 }
 
 const statusDetails: Record<
@@ -24,16 +26,20 @@ const statusDetails: Record<
   },
 };
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({
+  post,
+  onRetry,
+  isRetrying,
+}: PostCardProps) {
   const status = statusDetails[post.status];
 
   const scheduledDate = new Date(post.scheduledAt);
+
   const formattedTime = scheduledDate.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
   });
-
 
   const formattedDate = scheduledDate.toLocaleDateString(undefined, {
     month: "short",
@@ -47,10 +53,7 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex min-w-0 flex-1 gap-3">
           <div className="flex -space-x-1">
             {post.platforms.map((platform) => (
-              <PlatformIcon
-                key={platform}
-                platform={platform}
-              />
+              <PlatformIcon key={platform} platform={platform} />
             ))}
           </div>
 
@@ -98,6 +101,19 @@ export default function PostCard({ post }: PostCardProps) {
         >
           <span className="font-semibold">Publishing error: </span>
           {post.errorMessage}
+        </div>
+      )}
+
+      {(post.status === "failed" || isRetrying) && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => onRetry(post.id)}
+            disabled={isRetrying}
+            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            {isRetrying ? "Retrying..." : "Retry post"}
+          </button>
         </div>
       )}
     </article>

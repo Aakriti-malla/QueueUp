@@ -6,7 +6,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import PostComposer from "@/components/PostComposer";
 import PostFilters from "@/components/PostFilters";
 
-import { getPosts } from "@/lib/mock-api";
+import { getPosts, retryPost } from "@/lib/mock-api";
 import type { Post } from "@/types/post";
 
 export default function Home() {
@@ -14,6 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [retryingPostIds, setRetryingPostIds] = useState<string[]>([]);
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -40,6 +41,58 @@ export default function Home() {
   const handlePostCreated = useCallback((post: Post) => {
     setPosts((currentPosts) => [post, ...currentPosts]);
   }, []);
+
+  const handleRetry = useCallback(
+    async (id: string) => {
+      const originalPost = posts.find((post) => post.id === id);
+
+      if (!originalPost || originalPost.status !== "failed") {
+        return;
+      }
+
+      if (retryingPostIds.includes(id)) {
+        return;
+      }
+
+      setRetryingPostIds((currentIds) => [...currentIds, id]);
+
+      setPosts((currentPosts) =>
+        currentPosts.map((post) =>
+          post.id === id
+            ? {
+                ...post,
+                status: "scheduled",
+                errorMessage: undefined,
+              }
+            : post,
+        ),
+      );
+
+      try {
+        await retryPost(id);
+      } catch (error) {
+        setPosts((currentPosts) =>
+          currentPosts.map((post) =>
+            post.id === id
+              ? {
+                  ...post,
+                  status: "failed",
+                  errorMessage:
+                    error instanceof Error
+                      ? error.message
+                      : "Retry failed. Please try again.",
+                }
+              : post,
+          ),
+        );
+      } finally {
+        setRetryingPostIds((currentIds) =>
+          currentIds.filter((postId) => postId !== id),
+        );
+      }
+    },
+    [posts, retryingPostIds],
+  );
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -87,7 +140,11 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <PostFilters posts={posts} />
+            <PostFilters
+              posts={posts}
+              onRetry={handleRetry}
+              retryingPostIds={retryingPostIds}
+            />
           )}
         </section>
       </div>
