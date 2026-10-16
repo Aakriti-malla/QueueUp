@@ -1,11 +1,11 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
-import PostQueue from "@/components/PostQueue";
 import { getPosts } from "@/lib/mock-api";
 import type { Post } from "@/types/post";
+import { Suspense } from "react";
+import PostFilters from "@/components/PostFilters";
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -45,8 +45,7 @@ export default function Home() {
             className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-800"
           >
             <p>
-              The post composer is our next step. Your existing posts
-              are safe.
+              The post composer is our next step. Your existing posts are safe.
             </p>
 
             <button
@@ -62,20 +61,14 @@ export default function Home() {
 
         <section className="mt-8">
           <div className="mb-5">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Your queue
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Your queue</h2>
             <p className="mt-1 text-sm text-gray-500">
               All your posts, organized by scheduled date.
             </p>
           </div>
 
           {loading ? (
-            <div
-              role="status"
-              aria-label="Loading posts"
-              className="space-y-3"
-            >
+            <div role="status" aria-label="Loading posts" className="space-y-3">
               {[1, 2, 3].map((item) => (
                 <div
                   key={item}
@@ -89,9 +82,7 @@ export default function Home() {
               role="alert"
               className="rounded-xl border border-red-200 bg-white p-6 text-center"
             >
-              <p className="font-medium text-gray-900">
-                Unable to load posts
-              </p>
+              <p className="font-medium text-gray-900">Unable to load posts</p>
               <p className="mt-2 text-sm text-gray-600">{error}</p>
 
               <button
@@ -103,7 +94,15 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <PostQueue posts={posts} />
+            <Suspense
+              fallback={
+                <div className="rounded-xl border bg-white p-6 text-sm text-gray-500">
+                  Loading filters...
+                </div>
+              }
+            >
+              <PostFilters posts={posts} />
+            </Suspense>
           )}
         </section>
       </div>

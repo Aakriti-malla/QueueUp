@@ -1,19 +1,23 @@
-
 import type { Platform, Post, PostStatus } from "@/types/post";
+
+export interface PostFilters {
+  platforms: Platform[];
+  status: PostStatus | "";
+  search: string;
+}
 
 export function filterPosts(
   posts: Post[],
-  filters: {
-    platform?: Platform;
-    status?: PostStatus;
-    search?: string;
-  }
+  filters: PostFilters
 ): Post[] {
-  const search = filters.search?.trim().toLowerCase();
+  const search = filters.search.trim().toLowerCase();
 
   return posts.filter((post) => {
     const matchesPlatform =
-      !filters.platform || post.platforms.includes(filters.platform);
+      filters.platforms.length === 0 ||
+      filters.platforms.some((platform) =>
+        post.platforms.includes(platform)
+      );
 
     const matchesStatus =
       !filters.status || post.status === filters.status;
