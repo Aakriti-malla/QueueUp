@@ -58,18 +58,16 @@ export default function Home() {
 
       setPosts((currentPosts) =>
         currentPosts.map((post) =>
-          post.id === id
-            ? {
-                ...post,
-                status: "scheduled",
-                errorMessage: undefined,
-              }
-            : post,
+          post.id === id ? { ...post, errorMessage: undefined } : post,
         ),
       );
 
       try {
-        await retryPost(id);
+        const updatedPost = await retryPost(id);
+
+        setPosts((currentPosts) =>
+          currentPosts.map((post) => (post.id === id ? updatedPost : post)),
+        );
       } catch (error) {
         setPosts((currentPosts) =>
           currentPosts.map((post) =>

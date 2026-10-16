@@ -36,7 +36,7 @@ export default function CharacterCounter({
       aria-live="polite"
     >
       {platformLabels[platform]}: {count}/{limit}
-      {isOverLimit && " — limit exceeded"}
+      {isOverLimit && " — Character limit exceeded"}
     </p>
   );
 }

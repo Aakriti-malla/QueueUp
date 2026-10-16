@@ -101,7 +101,7 @@ export default function PostCard({
                 type="button"
                 onClick={() => onRetry(post.id)}
                 disabled={isRetrying}
-                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-900 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-900 cursor-pointer transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 <RotateCw
                   size={15}
