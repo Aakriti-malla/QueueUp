@@ -4,6 +4,10 @@ A responsive social media post scheduler built with Next.js, TypeScript, and Tai
 
 The project uses mock data and an in-memory API to simulate common post-scheduling workflows without requiring a backend or external social media integrations.
 
+## Demo
+
+Link: https://queue-up-social.vercel.app/
+
 ## Features
 
 ### Post Queue
@@ -56,13 +60,13 @@ The project uses mock data and an in-memory API to simulate common post-scheduli
 1. Clone the repository:
 
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/Aakriti-malla/QueueUp.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd <your-project-directory>
+   cd queue-up
    ```
 
 3. Install dependencies:
