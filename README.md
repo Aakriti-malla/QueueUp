@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Social Media Post Scheduler
+
+A responsive social media post scheduler built with Next.js, TypeScript, and Tailwind CSS. It provides a dashboard to manage scheduled posts, filter content, compose new posts, and retry failed posts.
+
+The project uses mock data and an in-memory API to simulate common post-scheduling workflows without requiring a backend or external social media integrations.
+
+## Features
+
+### Post Queue
+- View 30 mock posts grouped by day, including Today, Tomorrow, and upcoming dates.
+- Preview post content, attached media, scheduled time, target platforms, and publication status.
+- Distinguish between scheduled, published, and failed posts.
+
+### Search and Filters
+- Search posts by their content.
+- Filter posts by one or multiple social media platforms.
+- Filter by post status using a dropdown.
+- Persist search and filter selections in URL query parameters, allowing filtered views to be bookmarked or shared.
+
+### Post Composer
+- Compose posts with text, selected platforms, and an optional image URL.
+- Display live character counts for each selected platform.
+- Prevent scheduling when content exceeds the selected platforms' limits.
+- Require a valid future scheduling date and time.
+
+### Scheduling and Time Zones
+- Store scheduled timestamps in UTC using ISO 8601 format.
+- Display scheduled times in the user's local time zone.
+
+### Retry Failed Posts
+- Retry posts that have failed.
+- Simulate a one-second API request with a 20% chance of failure.
+- Restore the previous state and display an error message if the retry fails.
+
+### User Experience
+- Responsive layout for desktop and mobile screens.
+- Loading, empty, and error states.
+- Mock asynchronous API requests to simulate real application behavior.
+
+## Tech Stack
+
+- **Next.js** — App Router
+- **TypeScript** — Static typing
+- **Tailwind CSS** — Styling and responsive layouts
+- **pnpm** — Package management
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js (a version supported by your installed Next.js version)
+- pnpm
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone <your-repository-url>
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd <your-project-directory>
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+4. Start the development server:
+
+   ```bash
+   pnpm dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Data Model
+
+Each post follows this TypeScript structure:
+
+```ts
+export type Platform =
+  | "facebook"
+  | "instagram"
+  | "x"
+  | "tiktok";
+
+export type PostStatus =
+  | "scheduled"
+  | "published"
+  | "failed";
+
+export interface Post {
+  id: string;
+  content: string;
+  platforms: Platform[];
+  mediaUrl?: string;
+  scheduledAt: string;
+  status: PostStatus;
+  errorMessage?: string;
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technical Decisions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### In-memory Mock API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The application uses an in-memory mock API to simulate asynchronous operations such as fetching posts, creating posts, and retrying failed posts.
 
-## Learn More
+This keeps the project self-contained and makes it possible to demonstrate loading states, optimistic updates, and error handling without setting up a backend.
 
-To learn more about Next.js, take a look at the following resources:
+**Limitation:** Posts are not persisted to a database. Refreshing the application resets the mock data, and changes are not shared across users or sessions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### URL-based Filtering
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Search terms, platform selections, and status filters are stored in URL query parameters. This keeps the interface state reflected in the URL and makes filtered views easier to revisit.
 
-## Deploy on Vercel
+### UTC Timestamp Storage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Scheduled timestamps are stored in UTC and converted to local time for display. This separates the stored timestamp from the user's local time zone.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Optimistic Updates
+
+The retry workflow updates the interface before the simulated API request completes. If the request fails, the previous state is restored and an error is shown to the user.
